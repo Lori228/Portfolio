@@ -1560,17 +1560,21 @@ textarea.form-input::-webkit-resizer { display: none; }
   /**
    * #Certifications
    */
-   .timeline-list { margin-left: 65px; }
-
-  .timeline-item:not(:last-child)::before { left: -40px; }
-
-  .timeline-item::after {
-    height: 8px;
-    width: 8px;
-    left: -43px;
-  }
-
-  .skills-item:not(:last-child) { margin-bottom: 25px; }
+   .contrainer {
+    width: 450px;
+   }
+   .container {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+   }
+   .container ul li {
+    width: 150px;
+    height: 100px;
+    background-color: red;
+    float: left;
+}
+   
 
 
 
