@@ -767,64 +767,47 @@ main {
 .article-title { margin-bottom: 30px; }
 
 
-/**
- * education and experience 
- */
+/*-----------------------------------*\
+  #Certifications
+\*-----------------------------------*/
 
-.timeline { margin-bottom: 30px; }
-
-.timeline .title-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 25px;
+.info-box {
+  position: relative;
+  background: var(--border-gradient-onyx);
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-2);
+  z-index: 1;
+  margin-bottom: 20px;
 }
 
-.timeline-list {
-  font-size: var(--fs-6);
-  margin-left: 45px;
+.info-box::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: var(--bg-gradient-jet);
+  border-radius: inherit;
+  z-index: -1;
 }
 
-.timeline-item { position: relative; }
-
-.timeline-item:not(:last-child) { margin-bottom: 20px; }
-
-.timeline-item-title {
-  font-size: var(--fs-6);
-  line-height: 1.3;
-  margin-bottom: 7px;
-}
-
-.timeline-list span {
-  color: var(--vegas-gold);
+.info-box-title {
+  font-size: var(--fs-6); /* same as timeline item title */
   font-weight: var(--fw-400);
-  line-height: 1.6;
+  color: var(--white-2);
+  margin-bottom: 10px;
 }
 
-.timeline-item:not(:last-child)::before {
-  content: "";
-  position: absolute;
-  top: -25px;
-  left: -30px;
-  width: 1px;
-  height: calc(100% + 50px);
-  background: var(--jet);
+.info-box-date {
+  color: var(--vegas-gold); /* same as timeline span color */
+  font-size: var(--fs-6);
+  font-weight: var(--fw-400);
+  margin-bottom: 10px;
+  display: block;
 }
 
-.timeline-item::after {
-  content: "";
-  position: absolute;
-  top: 5px;
-  left: -33px;
-  height: 6px;
-  width: 6px;
-  background: var(--text-gradient-yellow);
-  border-radius: 50%;
-  box-shadow: 0 0 0 4px var(--jet);
-}
-
-.timeline-text {
+.info-box-text {
   color: var(--light-gray);
+  font-size: var(--fs-6);
   font-weight: var(--fw-300);
   line-height: 1.6;
 }
