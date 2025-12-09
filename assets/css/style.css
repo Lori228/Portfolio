@@ -1557,24 +1557,7 @@ textarea.form-input::-webkit-resizer { display: none; }
 
   .skills-item:not(:last-child) { margin-bottom: 25px; }
 
-  /**
-   * #Certifications
-   */
-   .contrainer {
-    width: 450px;
-   }
-   .container {
-    padding: 0;
-    margin: 0;
-    list-style-type: none;
-   }
-   .container ul li {
-    width: 150px;
-    height: 100px;
-    background-color: red;
-    float: left;
-}
-   
+  
 
 
 
