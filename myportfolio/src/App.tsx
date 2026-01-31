@@ -92,9 +92,11 @@ const DATA = {
 /** UI helpers */
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       <Navbar />
-      <main className="mx-auto w-[min(1100px,92%)] py-6">{children}</main>
+      <main className="w-full px-4 py-6 flex-1">
+        <div className="mx-auto w-[min(1100px,92%)]">{children}</div>
+      </main>
       <Footer />
     </div>
   );
@@ -233,7 +235,7 @@ function Home() {
   const projPeek = useMemo(() => DATA.projects.slice(0, 3), []);
 
   return (
-    <Layout>
+    <>
       <section className="grid gap-4 md:grid-cols-[1.4fr_.6fr]">
         <Card>
           <h1 className="text-3xl font-extrabold tracking-tight">{DATA.profile.name}</h1>
@@ -247,9 +249,7 @@ function Home() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <BtnLink to="/projects">View Projects</BtnLink>
-            <BtnLink to="/certifications">View Certifications</BtnLink>
-            <BtnA href={DATA.profile.cvUrl}>View CV (PDF)</BtnA>
+            <BtnA href={DATA.profile.cvUrl}>View CV</BtnA>
           </div>
         </Card>
 
@@ -277,7 +277,7 @@ function Home() {
 
       <section className="mt-7">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-extrabold">Certifications (Sneak Peek)</h2>
+          <h2 className="text-xl font-extrabold">Certifications</h2>
           <BtnLink to="/certifications">See all</BtnLink>
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -329,7 +329,7 @@ function Home() {
           <BtnA href={DATA.profile.cvUrl}>View CV</BtnA>
         </Card>
       </section>
-    </Layout>
+    </>
   );
 }
 
@@ -341,10 +341,10 @@ function Certifications() {
   ];
 
   return (
-    <Layout>
+    <>
       <Card>
         <h1 className="text-2xl font-extrabold">Certifications</h1>
-        <p className="mt-2 text-slate-400">Grouped into Pluralsight, Office 365, and Azure.</p>
+        <p className="mt-2 text-slate-400">List of my professional certifications.</p>
       </Card>
 
       <div className="mt-6 grid gap-6">
@@ -366,7 +366,7 @@ function Certifications() {
                         </div>
                       </div>
                       <div>
-                        <BtnA href={c.credentialUrl}>View Credential</BtnA>
+                        <BtnA href={c.credentialUrl}>View  </BtnA>
                       </div>
                     </Card>
                   ))
@@ -376,7 +376,7 @@ function Certifications() {
           );
         })}
       </div>
-    </Layout>
+    </>
   );
 }
 
@@ -390,7 +390,7 @@ function Projects() {
   }, [q]);
 
   return (
-    <Layout>
+    <>
       <Card>
         <h1 className="text-2xl font-extrabold">Projects</h1>
         <p className="mt-2 text-slate-400">Click a project to view a summary page.</p>
@@ -429,11 +429,11 @@ function Projects() {
           ))
         )}
       </section>
-    </Layout>
+    </>
   );
 }
 
-function ProjectDetail() {
+function Project() {
   const { id } = useParams();
   const nav = useNavigate();
 
@@ -453,7 +453,7 @@ function ProjectDetail() {
   }
 
   return (
-    <Layout>
+    <>
       <Card>
         <div className="grid items-center gap-4 md:grid-cols-[260px_1fr]">
           <img src={project.thumbnail} alt={`${project.title} thumbnail`} className="h-44 w-full rounded-2xl border border-white/10 object-cover" />
@@ -495,7 +495,7 @@ function ProjectDetail() {
           </button>
         </div>
       </Card>
-    </Layout>
+    </>
   );
 }
 
@@ -512,7 +512,7 @@ function Contact() {
   };
 
   return (
-    <Layout>
+    <>
       <Card>
         <h1 className="text-2xl font-extrabold">Contact</h1>
         <p className="mt-2 text-slate-400">
@@ -553,35 +553,46 @@ function Contact() {
           </button>
         </form>
       </Card>
+    </>
+  );
+}
+  function AppShell() {
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/certifications" element={<Certifications />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/projects/:id" element={<Project />} />
+        <Route path="/contact" element={<Contact />} />
+
+        <Route
+          path="*"
+          element={
+            <Card className="border-dashed text-slate-400">
+              Page not found.
+              <div className="mt-3">
+                <BtnLink to="/">Go Home</BtnLink>
+              </div>
+            </Card>
+          }
+        />
+      </Routes>
     </Layout>
   );
 }
+
+
+
 
 /** App Router */
 export default function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/certifications" element={<Certifications />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/:id" element={<ProjectDetail />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route
-          path="*"
-          element={
-            <Layout>
-              <Card className="border-dashed text-slate-400">
-                Page not found.
-                <div className="mt-3">
-                  <BtnLink to="/">Go Home</BtnLink>
-                </div>
-              </Card>
-            </Layout>
-          }
-        />
-      </Routes>
+      <AppShell />
     </Router>
   );
 }
+
+
 
