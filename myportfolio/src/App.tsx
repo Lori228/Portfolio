@@ -9,11 +9,6 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-/**
- * Multi-page React Portfolio (Dynamic)
- * Pages: Home, Certifications, Projects, Project Detail, Contact
- * CV button opens a PDF from public/cv/
- */
 
 type Skill = { name: string; level: number };
 type Cert = { title: string; issuer: string; date: string; credentialUrl: string };
@@ -41,9 +36,10 @@ const DATA = {
     github: "https://github.com/yourusername",
     linkedin: "https://www.linkedin.com/in/yourprofile/",
     cv: {
-      en: "/cv/CV_ENG.pdf",
-      fr: "/cv/CV_FR.pdf",
-    },
+          en: `${import.meta.env.BASE_URL}cv/CV_EN.pdf`,
+          fr: `${import.meta.env.BASE_URL}cv/CV_FR.pdf`,
+},
+
 
   
     avatarUrl: "/img/profile-placeholder.png", // put file in public/img/
