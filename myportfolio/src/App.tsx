@@ -42,7 +42,7 @@ const DATA = {
 
 
   
-    avatarUrl: `${import.meta.env.BASE_URL}img/profile.jpg`, 
+    avatarUrl: `${import.meta.env.BASE_URL}img/weber.jpg`, 
   }, 
   skills: [
     { name: "Linux", level: 80 },
