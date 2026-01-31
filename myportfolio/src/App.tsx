@@ -469,7 +469,7 @@ function Certifications() {
         </div>
       </section>
 
-      {/* ✅ Existing Certifications sections (Pluralsight / Office 365 / Azure) */}
+      
       <div className="mt-8 grid gap-6">
         {sections.map((s) => {
           const list = DATA.certifications[s.key] ?? [];
