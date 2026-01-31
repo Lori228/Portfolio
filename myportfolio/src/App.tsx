@@ -42,8 +42,8 @@ const DATA = {
 
 
   
-    avatarUrl: "/img/profile-placeholder.png", // put file in public/img/
-  },
+    avatarUrl: `${import.meta.env.BASE_URL}img/profile.jpg`, 
+  }, 
   skills: [
     { name: "Linux", level: 80 },
     { name: "Windows Server / AD", level: 75 },
@@ -321,7 +321,7 @@ function Home() {
             className="mt-3 h-56 w-full rounded-2xl border border-white/10 object-cover"
           />
           <div className="mt-3 text-xs text-slate-500">
-            Put images in <span className="font-mono">public/img</span>.
+
           </div>
         </Card>
       </section>
