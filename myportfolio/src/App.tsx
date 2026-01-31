@@ -36,7 +36,7 @@ const DATA = {
     github: "https://github.com/yourusername",
     linkedin: "https://www.linkedin.com/in/yourprofile/",
     cv: {
-          en: `${import.meta.env.BASE_URL}cv/CV_EN.pdf`,
+          en: `${import.meta.env.BASE_URL}cv/CV_ENG.pdf`,
           fr: `${import.meta.env.BASE_URL}cv/CV_FR.pdf`,
 },
 
