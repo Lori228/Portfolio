@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Routes,
   Route,
   NavLink,
@@ -18,6 +18,7 @@ import {
 type Skill = { name: string; level: number };
 type Cert = { title: string; issuer: string; date: string; credentialUrl: string };
 type ProjectLink = { label: string; url: string };
+type Badge = { title: string; date: string; duration: string; shareUrl: string; img: string };
 type Project = {
   id: string;
   title: string;
@@ -36,10 +37,15 @@ const DATA = {
     location: "Luxembourg",
     about:
       "I’m a Cloud Computing student passionate about systems, virtualization, and building practical projects. I enjoy working with Linux/Windows, Docker, cloud platforms, and automation.",
-    email: "your.email@example.com",
+    email: "",
     github: "https://github.com/yourusername",
     linkedin: "https://www.linkedin.com/in/yourprofile/",
-    cvUrl: "/cv/Weber_Laurence_CV.pdf", // put file in public/cv/
+    cv: {
+      en: "/cv/CV_ENG.pdf",
+      fr: "/cv/CV_FR.pdf",
+    },
+
+  
     avatarUrl: "/img/profile-placeholder.png", // put file in public/img/
   },
   skills: [
@@ -57,12 +63,69 @@ const DATA = {
       { title: "Pluralsight: Linux Administration", issuer: "Pluralsight", date: "2025-06", credentialUrl: "#" },
     ] as Cert[],
     office365: [
-      { title: "Microsoft 365 Fundamentals (MS-900)", issuer: "Microsoft", date: "2025-09", credentialUrl: "#" },
+      { title: "Microsoft Word", issuer: "Microsoft", date: "2025-09", credentialUrl: "#" },
+      { title: "Microsoft Excel", issuer: "Microsoft", date: "2025-09", credentialUrl: "#" },
+      { title: "Microsoft PowerPoint", issuer: "Microsoft", date: "2025-09", credentialUrl: "#" },
     ] as Cert[],
     azure: [
       { title: "Microsoft Azure Fundamentals (AZ-900)", issuer: "Microsoft", date: "2025-10", credentialUrl: "#" },
+      { title: "Microsoft Azure Administrator (AZ-500)", issuer: "Microsoft", date: "2025-11", credentialUrl: "#" },
     ] as Cert[],
   },
+  pluralsightBadges: [
+  {
+    title: "Maintaining, Monitoring and Troubleshooting Kubernetes",
+    date: "October 8th 2025",
+    duration: "2h 14m",
+    shareUrl: "https://app.pluralsight.com/achievements/share/a6122542-2e38-43d2-ac25-7bec7a589a1f",
+    img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/business-skills-catch-all/intermediate/enabled-light.4ffd2a.png",
+  },
+  {
+      title: "Certified Kubernetes Administrator: Kubernetes Foundations",
+      date: "October 7th 2025",
+      duration: "42m",
+      shareUrl: "https://app.pluralsight.com/achievements/share/46941e9f-78ec-4b3b-b7a7-37ff06056b86",
+      img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/business-skills-catch-all/beginner/enabled-light.71eed8.png",
+    },
+    {
+      title: "AWS Networking Fundamentals",
+      date: "September 28th 2025",
+      duration: "45m",
+      shareUrl: "https://app.pluralsight.com/achievements/share/8620729f-8ac3-42ce-a8bc-2f071b4b2faf",
+      img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/business-skills-catch-all/beginner/enabled-light.71eed8.png",
+    },
+    {
+      title: "Cloud-native Architecture and Design Principles",
+      date: "May 5th 2025",
+      duration: "25m",
+      shareUrl: "https://app.pluralsight.com/achievements/share/d81e8a5a-74ba-45f7-b997-cc67a4b137cf",
+      img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/business-skills-catch-all/beginner/enabled-light.71eed8.png",
+    },
+    {
+      title: "Cloud Computing Foundations",
+      date: "April 29th 2025",
+      duration: "",
+      shareUrl: "https://app.pluralsight.com/achievements/share/0174d250-7175-48ac-98b8-f64a8492b5cf",
+      img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/it-and-cloud/beginner/enabled-light.fa8919.png",
+    },
+    {
+      title: "Cloud Computing Fundamentals: Cloud Concepts",
+      date: "April 28th 2025",
+      duration: "1h 35m",
+      shareUrl: "https://app.pluralsight.com/achievements/share/4a80e932-7ad0-468a-b7a6-3bceab823fa2",
+      img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/it-and-cloud/beginner/enabled-light.e1cf24.png",
+    }, 
+    {
+      title: "Terraform: Getting Started",
+      date: "January 31st 2026",
+      duration: "1h 37m",
+      shareUrl: "https://app.pluralsight.com/achievements/share/56fdd8dd-c22f-48a9-a418-464ba2304929",
+      img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/it-and-cloud/beginner/enabled-light.e1cf24.png",
+  },
+    
+  // ...rest
+  ] as Badge[],
+
   projects: [
     {
       id: "nextcloud-pi",
@@ -88,6 +151,7 @@ const DATA = {
     },
   ] as Project[],
 };
+
 
 /** UI helpers */
 function Layout({ children }: { children: React.ReactNode }) {
@@ -249,7 +313,7 @@ function Home() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <BtnA href={DATA.profile.cvUrl}>View CV</BtnA>
+            <BtnA href={DATA.profile.cv.en}>View CV</BtnA>
           </div>
         </Card>
 
@@ -294,7 +358,7 @@ function Home() {
 
       <section className="mt-7">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-extrabold">Projects (Sneak Peek)</h2>
+          <h2 className="text-xl font-extrabold">Projects</h2>
           <BtnLink to="/projects">See all</BtnLink>
         </div>
 
@@ -321,14 +385,36 @@ function Home() {
       </section>
 
       <section className="mt-7">
-        <Card className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-lg font-extrabold">Curriculum Vitae</div>
-            <div className="text-slate-400">PDF format</div>
-          </div>
-          <BtnA href={DATA.profile.cvUrl}>View CV</BtnA>
+  <Card className="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <div className="text-lg font-extrabold">Curriculum Vitae</div>
+    </div>
+
+    <div className="flex gap-2">
+      {/* English */}
+       <a
+    href={DATA.profile.cv.en}
+    target="_blank"
+    rel="noreferrer"
+    className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
+  >
+    English version
+  </a>
+
+      {/* French */}
+        <a
+    href={DATA.profile.cv.fr}
+    target="_blank"
+    rel="noreferrer"
+    className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
+  >
+    French version
+  </a>
+</div>
         </Card>
       </section>
+
+
     </>
   );
 }
@@ -346,8 +432,49 @@ function Certifications() {
         <h1 className="text-2xl font-extrabold">Certifications</h1>
         <p className="mt-2 text-slate-400">List of my professional certifications.</p>
       </Card>
+      <section className="mt-6">
+        <h2 className="text-xl font-extrabold">Pluralsight Badges</h2>
 
-      <div className="mt-6 grid gap-6">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {DATA.pluralsightBadges?.length ? (
+            DATA.pluralsightBadges.map((b) => (
+              <a
+                key={b.shareUrl}
+                href={b.shareUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 hover:border-white/20"
+                title="Open Pluralsight badge"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={b.img}
+                    alt={b.title}
+                    className="h-14 w-14 rounded-xl border border-white/10 bg-white/5 object-contain p-2"
+                    loading="lazy"
+                  />
+                  <div className="min-w-0">
+                    <div className="truncate font-extrabold">{b.title}</div>
+                    <div className="mt-1 text-sm text-slate-400">
+                      {b.date}
+                      {b.duration ? ` • ${b.duration}` : ""}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm">
+                  View on Pluralsight →
+                </div>
+              </a>
+            ))
+          ) : (
+            <Card className="border-dashed text-slate-400">No Pluralsight badges added yet.</Card>
+          )}
+        </div>
+      </section>
+
+      {/* ✅ Existing Certifications sections (Pluralsight / Office 365 / Azure) */}
+      <div className="mt-8 grid gap-6">
         {sections.map((s) => {
           const list = DATA.certifications[s.key] ?? [];
           return (
@@ -366,7 +493,7 @@ function Certifications() {
                         </div>
                       </div>
                       <div>
-                        <BtnA href={c.credentialUrl}>View  </BtnA>
+                        <BtnA href={c.credentialUrl}>View</BtnA>
                       </div>
                     </Card>
                   ))
@@ -379,6 +506,7 @@ function Certifications() {
     </>
   );
 }
+
 
 function Projects() {
   const [q, setQ] = useState("");
