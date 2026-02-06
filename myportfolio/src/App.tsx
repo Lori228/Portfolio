@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   HashRouter as Router,
   Routes,
@@ -8,12 +8,27 @@ import {
   useParams,
   useNavigate,
 } from "react-router-dom";
-
+import Extras from "./extras";
 
 type Skill = { name: string; level: number };
-type Cert = { title: string; issuer: string; date: string; credentialUrl: string };
+
+// UPDATED: support PDF links for certificate + grade
+type Cert = {
+  title: string;
+  issuer: string;
+  date: string;
+
+  // old field (optional fallback)
+  credentialUrl?: string;
+
+  // NEW fields
+  certificatePdf?: string; // link to certificate PDF
+  gradePdf?: string;       // link to grade/result PDF
+};
+
 type ProjectLink = { label: string; url: string };
 type Badge = { title: string; date: string; duration: string; shareUrl: string; img: string };
+
 type Project = {
   id: string;
   title: string;
@@ -25,6 +40,19 @@ type Project = {
   links: ProjectLink[];
 };
 
+// Helpers to safely link PDFs with spaces in filenames
+const BASE = import.meta.env.BASE_URL;
+const certPdf = (fileName: string) => `${BASE}pdfs/certs/${encodeURIComponent(fileName)}`;
+const gradePdf = (fileName: string) => `${BASE}pdfs/certs/grades/${encodeURIComponent(fileName)}`;
+
+
+
+// ✅ NEW: helpers for images + docs (projects thumbnails + project PDFs)
+const img = (fileName: string) => `${BASE}projects/${encodeURIComponent(fileName)}`;
+const doc = (fileName: string) =>`${BASE}pdfs/${encodeURIComponent(fileName)}`;
+
+
+
 const DATA = {
   profile: {
     name: "Weber Laurence",
@@ -32,51 +60,96 @@ const DATA = {
     location: "Luxembourg",
     about:
       "I’m a Cloud Computing student passionate about systems, virtualization, and building practical projects. I enjoy working with Linux/Windows, Docker, cloud platforms, and automation.",
-    email: "",
-    github: "https://github.com/yourusername",
-    linkedin: "https://www.linkedin.com/in/yourprofile/",
+    email: "Weber.lori27@gmail.com",
+    linkedin: "https://www.linkedin.com/in/laurence-weber-51b551330/",
     cv: {
-          en: `${import.meta.env.BASE_URL}cv/CV_ENG.pdf`,
-          fr: `${import.meta.env.BASE_URL}cv/CV_FR.pdf`,
-},
+      en: `${BASE}cv/CV_ENG.pdf`,
+      fr: `${BASE}cv/CV_FR.pdf`,
+    },
+    avatarUrl: `${BASE}img/weber.jpg`,
+  },
 
-
-  
-    avatarUrl: `${import.meta.env.BASE_URL}img/weber.jpg`, 
-  }, 
   skills: [
-    { name: "Linux", level: 80 },
-    { name: "Windows Server / AD", level: 75 },
-    { name: "Docker", level: 70 },
-    { name: "Networking", level: 65 },
-    { name: "Azure (Basics)", level: 55 },
-    { name: "Python (Basics)", level: 60 },
-    { name: "PowerShell (Basics)", level: 55 },
+    { name: "Linux" },
+    { name: "Windows Server / AD"},
+    { name: "Docker"},
+    { name: "Networking"},
+    { name: "Azure fundamentals"},
+    { name: "AWS fundamentals"},
+    { name: "Python (Basics)"},
+    { name: "PowerShell (Basics)"},
+    { name: "Kubernetes"},
+    { name: "Terraform"},
+    { name: "Ansible"},
+    { name: "Prometheus & Grafana" },
+    { name: "SQL" },
   ] as Skill[],
+
+  softSkills: ["Teamwork", "Organization", "Problem solving", "Adaptability", "Autonomous work"] as string[],
+
   certifications: {
     pluralsight: [
       { title: "Pluralsight: Docker Fundamentals", issuer: "Pluralsight", date: "2025-05", credentialUrl: "#" },
       { title: "Pluralsight: Linux Administration", issuer: "Pluralsight", date: "2025-06", credentialUrl: "#" },
     ] as Cert[],
+
     office365: [
-      { title: "Microsoft Word", issuer: "Microsoft", date: "2025-09", credentialUrl: "#" },
-      { title: "Microsoft Excel", issuer: "Microsoft", date: "2025-09", credentialUrl: "#" },
-      { title: "Microsoft PowerPoint", issuer: "Microsoft", date: "2025-09", credentialUrl: "#" },
+      {
+        title: "Microsoft Word",
+        issuer: "Microsoft",
+        date: "2025-09",
+        certificatePdf: certPdf("word_associate.pdf"),
+        gradePdf: gradePdf("Microsoft specialist -Associate.pdf"),
+      },
+      {
+        title: "Microsoft Word Expert",
+        issuer: "Microsoft",
+        date: "2025-09",
+        certificatePdf: certPdf("word_expert.pdf"),
+        gradePdf: gradePdf("Microsoft word expert grades.pdf"),
+      },
+      {
+        title: "Microsoft PowerPoint",
+        issuer: "Microsoft",
+        date: "2025-09",
+        certificatePdf: certPdf("Powerpoint.pdf"),
+        gradePdf: gradePdf("Microsoft powerpoints grades.pdf"),
+      },
+      {
+        title: "Microsoft Excel",
+        issuer: "Microsoft",
+        date: "2025-09",
+        certificatePdf: certPdf("Excel.pdf"),
+        gradePdf: gradePdf("Microsoft Excel grades.pdf"),
+      },
+      {
+        title: "Microsoft office specialist",
+        issuer: "Microsoft",
+        date: "2025-09",
+        certificatePdf: certPdf("Microsoft specialist - Associate.pdf"),
+        credentialUrl: "#",
+      },
     ] as Cert[],
+
     azure: [
-      { title: "Microsoft Azure Fundamentals (AZ-900)", issuer: "Microsoft", date: "2025-10", credentialUrl: "#" },
-      { title: "Microsoft Azure Administrator (AZ-500)", issuer: "Microsoft", date: "2025-11", credentialUrl: "#" },
+      {
+        title: "Microsoft Azure Fundamentals (AZ-900)",
+        issuer: "Microsoft",
+        date: "2025-10",
+        credentialUrl: "#",
+      },
     ] as Cert[],
   },
+
   pluralsightBadges: [
-  {
-    title: "Maintaining, Monitoring and Troubleshooting Kubernetes",
-    date: "October 8th 2025",
-    duration: "2h 14m",
-    shareUrl: "https://app.pluralsight.com/achievements/share/a6122542-2e38-43d2-ac25-7bec7a589a1f",
-    img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/business-skills-catch-all/intermediate/enabled-light.4ffd2a.png",
-  },
-  {
+    {
+      title: "Maintaining, Monitoring and Troubleshooting Kubernetes",
+      date: "October 8th 2025",
+      duration: "2h 14m",
+      shareUrl: "https://app.pluralsight.com/achievements/share/a6122542-2e38-43d2-ac25-7bec7a589a1f",
+      img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/business-skills-catch-all/intermediate/enabled-light.4ffd2a.png",
+    },
+    {
       title: "Certified Kubernetes Administrator: Kubernetes Foundations",
       date: "October 7th 2025",
       duration: "42m",
@@ -108,48 +181,99 @@ const DATA = {
       title: "Cloud Computing Fundamentals: Cloud Concepts",
       date: "April 28th 2025",
       duration: "1h 35m",
-      shareUrl: "https://app.pluralsight.com/achievements/share/4a80e932-7ad0-468a-b7a6-3bceab823fa2",
+      shareUrl: "https://app.pluralsight.com/achievements/share/4a80e932-7ad0-468a-b7a7-3bceab823fa2",
       img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/it-and-cloud/beginner/enabled-light.e1cf24.png",
-    }, 
+    },
     {
       title: "Terraform: Getting Started",
       date: "January 31st 2026",
       duration: "1h 37m",
       shareUrl: "https://app.pluralsight.com/achievements/share/56fdd8dd-c22f-48a9-a418-464ba2304929",
       img: "https://pluralsight2.imgix.net/achievements/assets/badges/content-completion/courses/it-and-cloud/beginner/enabled-light.e1cf24.png",
-  },
-    
-  // ...rest
+    },
   ] as Badge[],
 
+  inProgress: ["Microsoft Azure Security Az-500", "Microsoft Azure Fundamentals AZ-900"],
+
+  
   projects: [
     {
-      id: "nextcloud-pi",
-      title: "Nextcloud on Raspberry Pi (Docker)",
-      tags: ["Docker", "Raspberry Pi", "Nextcloud"],
-      date: "Dec 2024",
-      thumbnail: "/img/project-placeholder.png",
+      id: "moviestream",
+      title: "MovieStream: Media Streaming Platform",
+      tags: ["Kubernetes", "Docker", "Jellyfin", "Linux"],
+      date: "2026-01",
+      thumbnail: img("moviestream.png"), 
       summary:
-        "Deployed Nextcloud in Docker on Raspberry Pi 4 with persistent storage, secure access, and documentation.",
-      details: ["Docker compose setup", "Persistent volumes + backups", "Basic security hardening", "Team workflow with Planner/Teams"],
-      links: [{ label: "GitHub", url: "#" }, { label: "Demo", url: "#" }],
+        "Deployed a containerized media streaming platform using Kubernetes and Docker. Jellyfin was used as the media service and storage layer to host and stream movie content across the network.",
+      details: [
+        "Built and deployed a Kubernetes-based application stack for media streaming",
+        "Containerized services using Docker and managed deployments with Kubernetes manifests",
+        "Deployed Jellyfin as the media server for hosting and streaming movie content",
+        "Configured persistent storage for Jellyfin to keep media data and configuration",
+        "Set up networking and service exposure (ClusterIP/NodePort or Ingress depending on setup)",
+        "Tested streaming access from client devices and validated performance/stability",
+      ],
+      
     },
+
+    {
+      id: "sushi-wizard",
+      title: "Sushi Wizard: Cloud-based Sushi Ordering Application",
+      tags: ["AWS", "Lambda", "API Gateway", "DynamoDB", "Web Development", "Microservices"],
+      date: "2025-05",
+      thumbnail: img("sushi-wizard.png"),
+      summary:
+        "Cloud-based web application allowing users to log in, browse sushi items, submit preferences, and receive personalized ordering options. The project focuses on integrating frontend components with AWS cloud services using a microservice-based architecture.",
+      details: [
+        "Designed and developed a web application for sushi browsing and preference-based ordering",
+        "Implemented user login functionality using AWS Lambda and Amazon DynamoDB",
+        "Connected frontend to backend services through Amazon API Gateway",
+        "Designed and deployed a cloud database structure for storing users and preferences",
+        "Used AWS CLI for backend configuration and database interaction",
+        "Implemented a rating and preference system for users",
+        "Managed project planning and progress tracking using ClickUp",
+        "Performed debugging, testing, and integration between frontend and cloud services",
+      ],
+    },
+
     {
       id: "hypervisor-compare",
       title: "Type 1 Hypervisor Comparison (XCP-ng vs Proxmox)",
       tags: ["Virtualization", "Clustering", "Storage"],
-      date: "Jun 2025",
-      thumbnail: "/img/project-placeholder.png",
+      date: "2025-04",
+      thumbnail: img("XCP-PROX.png"),
       summary:
-        "Compared two hypervisors using VM lifecycle tasks, snapshots, migrations, and NAS storage protocols.",
-      details: ["VM creation + OS installation", "Live migration testing", "Snapshots + backups", "NAS storage (SMB/NFS/iSCSI)"],
-      links: [{ label: "Report", url: "#" }],
+        "Server virtualization project comparing XCP-ng and Proxmox VE across VM lifecycle management, clustering, storage integration, and automation.",
+      details: [
+        "Installed and configured XCP-ng and Proxmox VE on two physical servers",
+        "Created and managed Windows and Linux virtual machines",
+        "Implemented snapshots, backups, cloning, and live migration",
+        "Integrated NAS storage using SMB, NFS, and iSCSI protocols",
+        "Configured clustering and user permission management",
+        "Developed CLI automation scripts for VM provisioning and monitoring",
+        "Compared performance, usability, and automation capabilities between both platforms",
+      ],
+      links: [{ label: "Report", url:  doc("Virtualizaton.pdf") }],
+    },
+
+    {
+      id: "itmos-checkmk",
+      title: "Monitoring with Checkmk",
+      tags: ["Monitoring", "Checkmk", "Proxmox", "SNMP", "SMTP", "Ubuntu"],
+      date: "2026-01",
+      thumbnail: img("checkmk.png"), 
+      summary: "Deployed a centralized monitoring solution using Checkmk to monitor Proxmox hosts and VMs.",
+      details: [
+        "Deployed Checkmk Raw Edition on an Ubuntu VM as the monitoring server.",
+        "Monitored a Proxmox host + multiple VMs with VM awareness (Proxmox integration).",
+        "Implemented agent-based monitoring for Linux hosts and SNMP monitoring for a printer.",
+        "Configured notifications/alerts via SMTP and created dashboards for visualization.",
+      ],
     },
   ] as Project[],
 };
 
 
-/** UI helpers */
 function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
@@ -168,57 +292,52 @@ function Navbar() {
   const active = "!text-slate-100 !border-white/10 !bg-white/5";
 
   return (
-  <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/70 backdrop-blur">
-    <div className="mx-auto flex w-[min(1100px,92%)] items-center justify-between gap-3 py-3">
-      <Link to="/" className="font-extrabold tracking-tight">
-        MyPortfolio
-      </Link>
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/70 backdrop-blur">
+      <div className="mx-auto flex w-[min(1100px,92%)] items-center justify-between gap-3 py-3">
+        <Link to="/" className="font-extrabold tracking-tight">
+          My Portfolio
+        </Link>
 
-      <nav className="flex flex-wrap gap-2">
-        <NavLink
-          to="/"
-          end
-          className={({ isActive }: { isActive: boolean }) =>
-            `${linkBase} ${isActive ? active : ""}`
-          }
-        >
-          Home
-        </NavLink>
+        <nav className="flex flex-wrap gap-2">
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }: { isActive: boolean }) => `${linkBase} ${isActive ? active : ""}`}
+          >
+            Home
+          </NavLink>
 
-        <NavLink
-          to="/certifications"
-          className={({ isActive }: { isActive: boolean }) =>
-            `${linkBase} ${isActive ? active : ""}`
-          }
-        >
-          Certifications
-        </NavLink>
+          <NavLink
+            to="/certifications"
+            className={({ isActive }: { isActive: boolean }) => `${linkBase} ${isActive ? active : ""}`}
+          >
+            Certifications
+          </NavLink>
 
-        <NavLink
-          to="/projects"
-          className={({ isActive }: { isActive: boolean }) =>
-            `${linkBase} ${isActive ? active : ""}`
-          }
-        >
-          Projects
-        </NavLink>
+          <NavLink
+            to="/projects"
+            className={({ isActive }: { isActive: boolean }) => `${linkBase} ${isActive ? active : ""}`}
+          >
+            Projects
+          </NavLink>
 
-        <NavLink
-          to="/contact"
-          className={({ isActive }: { isActive: boolean }) =>
-            `${linkBase} ${isActive ? active : ""}`
-          }
-        >
-          Contact
-        </NavLink>
-      </nav>
-    </div>
-  </header>
-);
+          <NavLink to="/extras" className={({ isActive }) => `${linkBase} ${isActive ? active : ""}`}>
+            Extras
+          </NavLink>
+
+          <NavLink
+            to="/contact"
+            className={({ isActive }: { isActive: boolean }) => `${linkBase} ${isActive ? active : ""}`}
+          >
+            Contact
+          </NavLink>
+        </nav>
+      </div>
+    </header>
+  );
 }
 
-
-  function Footer() {
+function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-10 border-t border-white/10 py-5 text-slate-400">
@@ -227,9 +346,6 @@ function Navbar() {
           © {year} {DATA.profile.name}
         </div>
         <div className="flex gap-4">
-          <a className="hover:text-slate-100" href={DATA.profile.github} target="_blank" rel="noreferrer">
-            GitHub
-          </a>
           <a className="hover:text-slate-100" href={DATA.profile.linkedin} target="_blank" rel="noreferrer">
             LinkedIn
           </a>
@@ -241,7 +357,11 @@ function Navbar() {
 
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={"rounded-2xl border border-white/10 bg-white/[0.03] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)] " + className}>
+    <div
+      className={
+        "rounded-2xl border border-white/10 bg-white/[0.03] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)] " + className
+      }
+    >
       {children}
     </div>
   );
@@ -255,44 +375,155 @@ function Tag({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SkillBar({ name, level }: Skill) {
+function SkillBar({ name }: Skill) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-3">
-      <div className="mb-2 flex items-center justify-between text-sm">
-        <strong className="text-slate-200">{name}</strong>
-        <span className="text-slate-400">{level}%</span>
-      </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
-        <div className="h-full rounded-full bg-blue-400" style={{ width: `${level}%` }} />
-      </div>
+    <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 transition hover:border-white/20 hover:bg-white/[0.04]">
+      <strong className="text-slate-200">{name}</strong>
     </div>
-  );
-}
+    );
+  }
+
 
 function BtnLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <Link to={to} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20">
+    <Link
+      to={to}
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
+    >
       {children}
     </Link>
   );
 }
 
-function BtnA({ href, children }: { href: string; children: React.ReactNode }) {
+function BtnA({
+  href,
+  children,
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children: React.ReactNode }) {
   return (
-    <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20">
+    <a
+      href={href}
+      {...props}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20 ${
+        props.className ?? ""
+      }`}
+    >
       {children}
     </a>
   );
 }
 
+const BTN_STYLE =
+  "inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-slate-900/80 text-slate-200 px-3 py-2 text-sm transition hover:bg-slate-800 hover:border-white/20";
+
+
+function Btn({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button {...props} className={BTN_STYLE}>
+      {children}
+    </button>
+  );
+}
+
+/** Skills Modal (inside App.tsx so no import path issues) */
+function SkillsModal({
+  open,
+  onClose,
+  technicalSkills,
+  softSkills,
+}: {
+  open: boolean;
+  onClose: () => void;
+  technicalSkills: Skill[];
+  softSkills: string[];
+}) {
+  useEffect(() => {
+    if (!open) return;
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    {/* background */}
+    <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+
+    {/* modal */}
+    <div className="relative z-10 w-full max-w-5xl max-h-[85vh] rounded-2xl border border-white/10 bg-slate-950 shadow-xl flex flex-col overflow-hidden">
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-white/10">
+        <h2 className="text-xl font-extrabold">All Skills</h2>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
+        >
+          Close
+        </button>
+      </div>
+
+      {/* SCROLLABLE CONTENT */}
+      <div className="overflow-y-auto px-6 py-6 grid gap-8 lg:grid-cols-2">
+
+        <section>
+          <h3 className="text-lg font-extrabold">Technical Skills</h3>
+          <div className="mt-3 grid gap-3">
+            {technicalSkills.map((s) => (
+              <SkillBar key={s.name} {...s} />
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-extrabold">Soft Skills</h3>
+          <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {softSkills.map((skill) => (
+                <li
+                  key={skill}
+                  className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm"
+                >
+                  {skill}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+);
+
+
+}
+
 /** Pages */
 function Home() {
+  const [skillsOpen, setSkillsOpen] = useState(false);
+
   const certPeek = useMemo(() => {
-    const all = [...DATA.certifications.pluralsight, ...DATA.certifications.office365, ...DATA.certifications.azure];
+    const all = [...DATA.certifications.office365, ...DATA.certifications.azure];
     return all.slice(0, 4);
   }, []);
 
   const projPeek = useMemo(() => DATA.projects.slice(0, 3), []);
+  const skillPeek = useMemo(() => DATA.skills.slice(0, 6), []);
+
 
   return (
     <>
@@ -309,31 +540,39 @@ function Home() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <BtnA href={DATA.profile.cv.en}>View CV</BtnA>
+            <BtnA href={DATA.profile.cv.en} target="_blank" rel="noreferrer">
+              View CV
+            </BtnA>
           </div>
         </Card>
 
         <Card>
-          <div className="text-slate-400">Profile</div>
-          <img
-            src={DATA.profile.avatarUrl}
-            alt="profile"
-            className="mt-3 h-56 w-full rounded-2xl border border-white/10 object-cover"
-          />
-          <div className="mt-3 text-xs text-slate-500">
-
-          </div>
+          <div className="text-slate-300">Profile</div>
+          <img src={DATA.profile.avatarUrl} alt="profile" className="mx-auto w-56 h-auto object-contain rounded-2xl" />
+          <div className="mx-auto mt-4 w-64 h-auto rounded-2xl border border-white/10 object-contain" />
         </Card>
       </section>
 
       <section className="mt-7">
+      <div className="flex items-center justify-between">
         <h2 className="text-xl font-extrabold">Skills</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {DATA.skills.map((s) => (
-            <SkillBar key={s.name} {...s} />
-          ))}
-        </div>
-      </section>
+        <Btn onClick={() => setSkillsOpen(true)}>See all</Btn>
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {skillPeek.map((s) => (
+          <SkillBar key={s.name} {...s} />
+        ))}
+      </div>
+
+      <SkillsModal
+        open={skillsOpen}
+        onClose={() => setSkillsOpen(false)}
+        technicalSkills={DATA.skills}
+        softSkills={DATA.softSkills}
+      />
+    </section>
+
 
       <section className="mt-7">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -353,6 +592,34 @@ function Home() {
       </section>
 
       <section className="mt-7">
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-lg font-extrabold">Curriculum Vitae</div>
+          </div>
+
+          <div className="flex gap-2">
+            <a
+              href={DATA.profile.cv.en}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
+            >
+              English version
+            </a>
+
+            <a
+              href={DATA.profile.cv.fr}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
+            >
+              French version
+            </a>
+          </div>
+        </Card>
+      </section>
+
+      <section className="mt-7">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-xl font-extrabold">Projects</h2>
           <BtnLink to="/projects">See all</BtnLink>
@@ -365,7 +632,14 @@ function Home() {
               to={`/projects/${p.id}`}
               className="grid overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition hover:border-white/20 md:grid-cols-[140px_1fr]"
             >
-              <img src={p.thumbnail} alt={`${p.title} thumbnail`} className="h-full w-full object-cover" />
+              <img
+                src={p.thumbnail}
+                alt={`${p.title} thumbnail`}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = img("project-placeholder.png");
+                }}
+              />
               <div className="p-4">
                 <div className="font-extrabold">{p.title}</div>
                 <div className="mt-1 text-sm text-slate-400">{p.summary}</div>
@@ -379,78 +653,84 @@ function Home() {
           ))}
         </div>
       </section>
-
-      <section className="mt-7">
-  <Card className="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <div className="text-lg font-extrabold">Curriculum Vitae</div>
-    </div>
-
-    <div className="flex gap-2">
-      {/* English */}
-       <a
-    href={DATA.profile.cv.en}
-    target="_blank"
-    rel="noreferrer"
-    className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
-  >
-    English version
-  </a>
-
-      {/* French */}
-        <a
-    href={DATA.profile.cv.fr}
-    target="_blank"
-    rel="noreferrer"
-    className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
-  >
-    French version
-  </a>
-</div>
-        </Card>
-      </section>
-
-
     </>
   );
 }
 
 function Certifications() {
-  const sections: Array<{ key: keyof typeof DATA.certifications; title: string }> = [
-    { key: "pluralsight", title: "Pluralsight" },
-    { key: "office365", title: "Office 365" },
-    { key: "azure", title: "Azure" },
-  ];
+  const official = [...DATA.certifications.office365];
+  const inProgress = DATA.inProgress ?? [];
 
   return (
     <>
       <Card>
         <h1 className="text-2xl font-extrabold">Certifications</h1>
-        <p className="mt-2 text-slate-400">List of my professional certifications.</p>
+        <p className="mt-2 text-slate-400">List of my Certifications and Badges</p>
       </Card>
-      <section className="mt-6">
-        <h2 className="text-xl font-extrabold">Pluralsight Badges</h2>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-extrabold">Official Certifications</h2>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {official.length ? (
+            official.map((c) => (
+              <Card key={c.title} className="flex flex-col gap-3">
+                <div>
+                  <div className="font-extrabold">{c.title}</div>
+                  <div className="mt-1 text-sm text-slate-400">
+                    {c.issuer} • {c.date}
+                  </div>
+                </div>
+
+                <div className="mt-auto flex flex-wrap gap-2">
+                  {c.certificatePdf ? (
+                    <BtnA
+                      href={c.certificatePdf}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-blue-500/15 border-blue-400/20 hover:border-blue-300/30"
+                    >
+                      Certificate
+                    </BtnA>
+                  ) : null}
+
+                  {c.gradePdf ? (
+                    <BtnA href={c.gradePdf} target="_blank" rel="noreferrer">
+                      Grades
+                    </BtnA>
+                  ) : null}
+
+                  {!c.certificatePdf && !c.gradePdf && c.credentialUrl ? (
+                    <BtnA href={c.credentialUrl} target="_blank" rel="noreferrer">
+                      View
+                    </BtnA>
+                  ) : null}
+                </div>
+              </Card>
+            ))
+          ) : (
+            <Card className="border-dashed text-slate-400">No official certifications added yet.</Card>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-xl font-extrabold">Unofficial Certifications</h2>
+        <p className="mt-1 text-sm text-slate-400">Course completion badges and training achievements (Pluralsight).</p>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {DATA.pluralsightBadges?.length ? (
             DATA.pluralsightBadges.map((b) => (
-              <a
-                key={b.shareUrl}
-                href={b.shareUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 hover:border-white/20"
-                title="Open Pluralsight badge"
-              >
-                <div className="flex items-center gap-3">
+              <Card key={b.shareUrl} className="flex flex-col gap-3">
+                <div className="flex items-start gap-3">
                   <img
                     src={b.img}
                     alt={b.title}
-                    className="h-14 w-14 rounded-xl border border-white/10 bg-white/5 object-contain p-2"
+                    className="h-12 w-12 rounded-xl border border-white/10 bg-white/5 object-contain p-2"
                     loading="lazy"
                   />
                   <div className="min-w-0">
-                    <div className="truncate font-extrabold">{b.title}</div>
+                    <div className="font-extrabold leading-snug">{b.title}</div>
                     <div className="mt-1 text-sm text-slate-400">
                       {b.date}
                       {b.duration ? ` • ${b.duration}` : ""}
@@ -458,47 +738,35 @@ function Certifications() {
                   </div>
                 </div>
 
-                <div className="mt-3 inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm">
-                  View on Pluralsight →
+                <div className="mt-auto">
+                  <BtnA href={b.shareUrl} target="_blank" rel="noreferrer">
+                    View on Pluralsight
+                  </BtnA>
                 </div>
-              </a>
+              </Card>
             ))
           ) : (
-            <Card className="border-dashed text-slate-400">No Pluralsight badges added yet.</Card>
+            <Card className="border-dashed text-slate-400">No unofficial certifications added yet.</Card>
           )}
         </div>
       </section>
 
-      
-      <div className="mt-8 grid gap-6">
-        {sections.map((s) => {
-          const list = DATA.certifications[s.key] ?? [];
-          return (
-            <section key={s.key}>
-              <h2 className="text-xl font-extrabold">{s.title}</h2>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {list.length === 0 ? (
-                  <Card className="border-dashed text-slate-400">No certifications added yet.</Card>
-                ) : (
-                  list.map((c) => (
-                    <Card key={c.title} className="flex flex-col gap-3">
-                      <div>
-                        <div className="font-extrabold">{c.title}</div>
-                        <div className="mt-1 text-sm text-slate-400">
-                          {c.issuer} • {c.date}
-                        </div>
-                      </div>
-                      <div>
-                        <BtnA href={c.credentialUrl}>View</BtnA>
-                      </div>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+      <section className="mt-10">
+        <h2 className="text-xl font-extrabold">In Progress</h2>
+        <p className="mt-1 text-sm text-slate-400">Topics and certifications I’m currently working on.</p>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {inProgress.length ? (
+            inProgress.map((item) => (
+              <Card key={item} className="border-dashed text-slate-400 flex items-center justify-center p-6 text-center">
+                {item}
+              </Card>
+            ))
+          ) : (
+            <Card className="border-dashed text-slate-400">Nothing listed as in progress yet.</Card>
+          )}
+        </div>
+      </section>
     </>
   );
 }
@@ -506,18 +774,46 @@ function Certifications() {
 
 function Projects() {
   const [q, setQ] = useState("");
+  const [sortOrder, setSortOrder] = useState<"new" | "old">("new"); // default: newest first
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    if (!query) return DATA.projects;
-    return DATA.projects.filter((p) => `${p.title} ${p.summary} ${p.tags.join(" ")}`.toLowerCase().includes(query));
-  }, [q]);
+
+    const filteredProjects = !query
+      ? DATA.projects
+      : DATA.projects.filter((p) =>
+          `${p.title} ${p.summary} ${p.tags.join(" ")}`.toLowerCase().includes(query)
+        );
+
+    // Sort using date (recommended format: "YYYY-MM" or "YYYY-MM-DD")
+    const sorted = [...filteredProjects].sort((a, b) => {
+      const at = new Date(a.date).getTime();
+      const bt = new Date(b.date).getTime();
+      return sortOrder === "new" ? bt - at : at - bt; // new->old or old->new
+    });
+
+    return sorted;
+  }, [q, sortOrder]);
 
   return (
     <>
       <Card>
-        <h1 className="text-2xl font-extrabold">Projects</h1>
-        <p className="mt-2 text-slate-400">Click a project to view a summary page.</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-extrabold">Projects</h1>
+            <p className="mt-2 text-slate-400">List of my Projects</p>
+          </div>
+
+          
+          <Btn
+          type="button"
+          onClick={() => setSortOrder((s) => (s === "new" ? "old" : "new"))}
+        >
+          {sortOrder === "new" ? "New → Old" : "Old → New"}
+        </Btn>
+
+        </div>
+
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -536,7 +832,15 @@ function Projects() {
               to={`/projects/${p.id}`}
               className="grid overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition hover:border-white/20 md:grid-cols-[160px_1fr]"
             >
-              <img src={p.thumbnail} alt={`${p.title} thumbnail`} className="h-full w-full object-cover" />
+              <img
+                src={p.thumbnail}
+                alt={`${p.title} thumbnail`}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  // fallback if image missing
+                  e.currentTarget.src = img("project-placeholder.png");
+                }}
+              />
               <div className="p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="font-extrabold">{p.title}</div>
@@ -559,7 +863,7 @@ function Projects() {
 
 function Project() {
   const { id } = useParams();
-  const nav = useNavigate();
+  const navigate = useNavigate();
 
   const project = useMemo(() => DATA.projects.find((p) => p.id === id), [id]);
 
@@ -580,7 +884,14 @@ function Project() {
     <>
       <Card>
         <div className="grid items-center gap-4 md:grid-cols-[260px_1fr]">
-          <img src={project.thumbnail} alt={`${project.title} thumbnail`} className="h-44 w-full rounded-2xl border border-white/10 object-cover" />
+          <img
+            src={project.thumbnail}
+            alt={`${project.title} thumbnail`}
+            className="h-44 w-full rounded-2xl border border-white/10 object-cover"
+            onError={(e) => {
+              e.currentTarget.src = img("project-placeholder.png");
+            }}
+          />
           <div>
             <h1 className="text-2xl font-extrabold">{project.title}</h1>
             <div className="mt-1 text-slate-500">{project.date}</div>
@@ -601,21 +912,28 @@ function Project() {
           ))}
         </ul>
 
-        <h2 className="mt-6 text-lg font-extrabold">Links</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {project.links.map((l) => (
-            <BtnA key={l.label} href={l.url}>
-              {l.label}
-            </BtnA>
-          ))}
-        </div>
+        {/* ✅ show links if present */}
+        {project.links?.length ? (
+          <>
+            <h2 className="mt-6 text-lg font-extrabold">Links</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {project.links.map((l) => (
+                <BtnA key={l.label} href={l.url} target="_blank" rel="noreferrer">
+                  {l.label}
+                </BtnA>
+              ))}
+            </div>
+          </>
+        ) : null}
 
         <div className="mt-6">
           <button
-            onClick={() => nav(-1)}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:border-white/20"
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm hover:border-white/20 transition"
           >
-            ← Back
+            <span>←</span>
+            Back
           </button>
         </div>
       </Card>
@@ -672,7 +990,10 @@ function Contact() {
             placeholder="Your message"
             className="min-h-[160px] w-full resize-y rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100 outline-none placeholder:text-slate-500"
           />
-          <button type="submit" className="inline-flex w-fit items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:border-white/20">
+          <button
+            type="submit"
+            className="inline-flex w-fit items-center justify-center rounded-xl border border-white/10 bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700 hover:border-white/20 transition"
+          >
             Send
           </button>
         </form>
@@ -680,7 +1001,8 @@ function Contact() {
     </>
   );
 }
-  function AppShell() {
+
+function AppShell() {
   return (
     <Layout>
       <Routes>
@@ -688,6 +1010,7 @@ function Contact() {
         <Route path="/certifications" element={<Certifications />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/projects/:id" element={<Project />} />
+        <Route path="/extras" element={<Extras />} />
         <Route path="/contact" element={<Contact />} />
 
         <Route
@@ -706,9 +1029,6 @@ function Contact() {
   );
 }
 
-
-
-
 /** App Router */
 export default function App() {
   return (
@@ -717,6 +1037,9 @@ export default function App() {
     </Router>
   );
 }
+
+
+
 
 
 
